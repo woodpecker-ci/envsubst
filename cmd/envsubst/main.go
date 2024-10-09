@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/drone/envsubst/v2"
+	"github.com/woodpecker-ci/envsubst"
 )
 
 func main() {
@@ -25,4 +25,3 @@ func main() {
 		stdout.Flush()
 	}
 }
-

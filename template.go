@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/drone/envsubst/v2/parse"
+	"github.com/woodpecker-ci/envsubst/parse"
 )
 
 // state represents the state of template execution. It is not part of the
@@ -88,7 +88,7 @@ func (t *Template) evalList(s *state, node *parse.ListNode) (err error) {
 }
 
 func (t *Template) evalFunc(s *state, node *parse.FuncNode) error {
-	var w = s.writer
+	w := s.writer
 	var buf bytes.Buffer
 	var args []string
 	for _, n := range node.Args {

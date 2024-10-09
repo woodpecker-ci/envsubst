@@ -6,7 +6,7 @@ import "testing"
 // http://www.tldp.org/LDP/abs/html/parameter-substitution.html
 
 func TestExpand(t *testing.T) {
-	var expressions = []struct {
+	expressions := []struct {
 		params map[string]string
 		input  string
 		output string
