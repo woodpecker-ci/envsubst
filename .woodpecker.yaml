@@ -1,0 +1,5 @@
+steps:
+  - name: build
+    image: golang:1.23
+    commands:
+      - go test -v ./...
