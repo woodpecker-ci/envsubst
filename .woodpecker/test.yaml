@@ -1,5 +1,5 @@
 steps:
   - name: build
-    image: golang:1.11
+    image: golang:1.27
     commands:
       - go test -v ./...
