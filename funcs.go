@@ -12,16 +12,13 @@ import (
 )
 
 var (
-	// ErrBadSubstringPosition represents a substring position that is
-	// not an integer.
+	// ErrBadSubstringPosition represents a substring position that is not an integer.
 	ErrBadSubstringPosition = errors.New("bad substring position")
 
-	// ErrBadSubstringLength represents a substring length that is not
-	// a positive integer.
+	// ErrBadSubstringLength represents a substring length that is not a positive integer.
 	ErrBadSubstringLength = errors.New("bad substring length")
 
-	// ErrMissingArgument represents a substitution function called
-	// without the arguments it needs.
+	// ErrMissingArgument represents a substitution function called without the arguments it needs.
 	ErrMissingArgument = errors.New("missing argument")
 )
 
@@ -90,13 +87,10 @@ func toSubstr(s string, args ...string) (string, error) {
 	if pos < 0 {
 		// if pos is negative (counts from the end) add it
 		// to length to get first character offset
-		pos = len(s) + pos
-
-		// if negative offset exceeds the length of the string
-		// start from 0
-		if pos < 0 {
-			pos = 0
-		}
+		pos = max(
+			// if negative offset exceeds the length of the string
+			// start from 0
+			len(s)+pos, 0)
 	}
 
 	if len(args) == 1 {
@@ -172,8 +166,8 @@ func replaceSuffix(s string, args ...string) (string, error) {
 	if len(args) != 2 {
 		return "", ErrMissingArgument
 	}
-	if strings.HasSuffix(s, args[0]) {
-		s = strings.TrimSuffix(s, args[0])
+	if before, ok := strings.CutSuffix(s, args[0]); ok {
+		s = before
 		s = s + args[1]
 	}
 	return s, nil
