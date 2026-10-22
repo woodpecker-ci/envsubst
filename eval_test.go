@@ -64,6 +64,24 @@ func TestExpand(t *testing.T) {
 			input:  "${path_name:11:5}",
 			output: "ideas",
 		},
+		// substring with position and negative length
+		{
+			params: map[string]string{"path_name": "/home/bozo/ideas/thoughts.for.today"},
+			input:  "${path_name:11:-6}",
+			output: "ideas/thoughts.for",
+		},
+		// substring with negative length cutting everything
+		{
+			params: map[string]string{"var": "abc"},
+			input:  "[${var:0:-3}]",
+			output: "[]",
+		},
+		// substring with negative length from a variable
+		{
+			params: map[string]string{"var": "abcdefgh", "pos": "1", "len": "-2"},
+			input:  "${var:${pos}:${len}}",
+			output: "bcdef",
+		},
 		// default not used
 		{
 			params: map[string]string{"var": "abc"},
@@ -234,13 +252,24 @@ func TestExpand(t *testing.T) {
 
 func TestExpandError(t *testing.T) {
 	for input, want := range map[string]error{
-		"${var:abc}": ErrBadSubstringPosition,
-		"${var:1:x}": ErrBadSubstringLength,
-		"${var##[}":  path.ErrBadPattern,
+		"${var:abc}":  ErrBadSubstringPosition,
+		"${var:1:x}":  ErrBadSubstringLength,
+		"${var:3:-9}": ErrBadSubstringLength,
+		"${var:8:-1}": ErrBadSubstringLength,
+		"${var##[}":   path.ErrBadPattern,
 	} {
 		_, err := Eval(input, func(string) string { return "abcdefgh" })
 		if !errors.Is(err, want) {
 			t.Errorf("Want %q to fail with %q, got %v", input, want, err)
 		}
+	}
+}
+
+func TestExpandErrorUnsetVariable(t *testing.T) {
+	// a negative length on an unset variable used to panic
+	input := "${unset:0:-1}"
+	_, err := Eval(input, func(string) string { return "" })
+	if !errors.Is(err, ErrBadSubstringLength) {
+		t.Errorf("Want %q to fail with %q, got %v", input, ErrBadSubstringLength, err)
 	}
 }
