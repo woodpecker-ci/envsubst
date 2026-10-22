@@ -116,7 +116,7 @@ Scan:
 func matchChunk(chunk, s string) (rest string, ok bool, err error) {
 	for len(chunk) > 0 {
 		if len(s) == 0 {
-			return rest, ok, err
+			return
 		}
 		switch chunk[0] {
 		case '[':
@@ -140,12 +140,12 @@ func matchChunk(chunk, s string) (rest string, ok bool, err error) {
 				}
 				var lo, hi rune
 				if lo, chunk, err = getEsc(chunk); err != nil {
-					return rest, ok, err
+					return
 				}
 				hi = lo
 				if chunk[0] == '-' {
 					if hi, chunk, err = getEsc(chunk[1:]); err != nil {
-						return rest, ok, err
+						return
 					}
 				}
 				if lo <= r && r <= hi {
@@ -154,7 +154,7 @@ func matchChunk(chunk, s string) (rest string, ok bool, err error) {
 				nrange++
 			}
 			if match != notNegated {
-				return rest, ok, err
+				return
 			}
 
 		case '?':
@@ -166,13 +166,13 @@ func matchChunk(chunk, s string) (rest string, ok bool, err error) {
 			chunk = chunk[1:]
 			if len(chunk) == 0 {
 				err = ErrBadPattern
-				return rest, ok, err
+				return
 			}
 			fallthrough
 
 		default:
 			if chunk[0] != s[0] {
-				return rest, ok, err
+				return
 			}
 			s = s[1:]
 			chunk = chunk[1:]
@@ -185,13 +185,13 @@ func matchChunk(chunk, s string) (rest string, ok bool, err error) {
 func getEsc(chunk string) (r rune, nchunk string, err error) {
 	if len(chunk) == 0 || chunk[0] == '-' || chunk[0] == ']' {
 		err = ErrBadPattern
-		return r, nchunk, err
+		return
 	}
 	if chunk[0] == '\\' {
 		chunk = chunk[1:]
 		if len(chunk) == 0 {
 			err = ErrBadPattern
-			return r, nchunk, err
+			return
 		}
 	}
 	r, n := utf8.DecodeRuneInString(chunk)
@@ -202,5 +202,5 @@ func getEsc(chunk string) (r rune, nchunk string, err error) {
 	if len(nchunk) == 0 {
 		err = ErrBadPattern
 	}
-	return r, nchunk, err
+	return
 }

@@ -54,7 +54,7 @@ func (t *Template) Execute(mapping func(string) string) (str string, err error) 
 	s.writer = b
 	err = t.eval(s)
 	if err != nil {
-		return str, err
+		return
 	}
 	return b.String(), nil
 }
