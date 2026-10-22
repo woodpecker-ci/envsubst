@@ -1,6 +1,9 @@
 package envsubst
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func Test_len(t *testing.T) {
 	got, want := result(toLen("Hello World")), "11"
@@ -105,6 +108,58 @@ func Test_substr(t *testing.T) {
 	got, want = result(toSubstr("123456789123456789", "1", "-2")), "234567891234567"
 	if got != want {
 		t.Errorf("Expect substr function to count negative lengths from the end")
+	}
+}
+
+func Test_substrNegativeLength(t *testing.T) {
+	// want values match bash 5.2 ${s:pos:len}
+	for _, c := range []struct {
+		s, pos, length, want string
+	}{
+		{"abcdefgh", "0", "-1", "abcdefg"},
+		{"abcdefgh", "1", "-2", "bcdef"},
+		{"abcdefgh", "+1", "-2", "bcdef"},
+		{"abcdefgh", "-3", "-1", "fg"},
+		{"abcdefgh", "-8", "-1", "abcdefg"},
+		// end equals position
+		{"abcdefgh", "0", "-8", ""},
+		{"abcdefgh", "7", "-1", ""},
+		{"abcdefgh", "-3", "-3", ""},
+		// minus zero is a zero length
+		{"abcdefgh", "1", "-0", ""},
+		// position past the end
+		{"abcdefgh", "9", "-1", ""},
+		{"abcdefgh", "9223372036854775807", "-1", ""},
+		{"", "1", "-1", ""},
+	} {
+		got, err := toSubstr(c.s, c.pos, c.length)
+		if err != nil || got != c.want {
+			t.Errorf("Expect substr of %q at %s with length %s to return %q, got %q, %v", c.s, c.pos, c.length, c.want, got, err)
+		}
+	}
+}
+
+func Test_substrNegativeLengthBeforePosition(t *testing.T) {
+	// bash fails on all of these with "substring expression < 0"
+	for _, c := range []struct {
+		s, pos, length string
+	}{
+		{"abcdefgh", "0", "-9"},
+		{"abcdefgh", "3", "-9"},
+		{"abcdefgh", "-3", "-5"},
+		// position at the end
+		{"abcdefgh", "8", "-1"},
+		// empty or unset variable
+		{"", "0", "-1"},
+		// must not wrap around
+		{"abcdefgh", "0", "-9223372036854775808"},
+		// out of int range
+		{"abcdefgh", "0", "-9223372036854775809"},
+	} {
+		got, err := toSubstr(c.s, c.pos, c.length)
+		if !errors.Is(err, ErrBadSubstringLength) || got != "" {
+			t.Errorf("Expect substr of %q at %s with length %s to fail with %q, got %q, %v", c.s, c.pos, c.length, ErrBadSubstringLength, got, err)
+		}
 	}
 }
 
