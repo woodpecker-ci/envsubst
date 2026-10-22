@@ -1,5 +1,21 @@
+when:
+  - event: pull_request
+  - event: push
+    branch: renovate/*
+
+variables:
+  - &golang 'golang:1.27-alpine'
+
 steps:
-  - name: build
-    image: golang:1.27
+  lint:
+    image: *golang
+    depends_on: []
     commands:
-      - go test -v ./...
+      - go vet ./...
+      - test -z "$(gofmt -l . | tee /dev/stderr)"
+
+  test:
+    image: *golang
+    depends_on: []
+    commands:
+      - go test -cover ./...
