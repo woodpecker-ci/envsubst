@@ -90,7 +90,8 @@ func toSubstr(s string, args ...string) (string, error) {
 		pos = max(
 			// if negative offset exceeds the length of the string
 			// start from 0
-			len(s)+pos, 0)
+			len(s)+pos, 0,
+		)
 	}
 
 	if len(args) == 1 {
