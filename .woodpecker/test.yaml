@@ -12,7 +12,8 @@ steps:
     depends_on: []
     commands:
       - go vet ./...
-      - "test -z \"$(go run mvdan.cc/gofumpt@v0.12.0 -extra -l .)\" || {echo 'error: format files with gofumpt'; exit 1}"
+      - unformatted=$(go run mvdan.cc/gofumpt@v0.12.0 -extra -l .)
+      - 'if [ -n "$unformatted" ]; then echo "error: files not formatted with gofumpt -extra:"; echo "$unformatted"; echo "fix with: go run mvdan.cc/gofumpt@v0.12.0 -extra -w ."; exit 1; fi'
 
   test:
     image: *golang
