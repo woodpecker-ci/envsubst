@@ -1,5 +1,22 @@
+when:
+  - event: pull_request
+  - event: push
+    branch: renovate/*
+
+variables:
+  - &golang 'golang:1.27-alpine'
+
 steps:
-  - name: build
-    image: golang:1.27
+  lint:
+    image: *golang
+    depends_on: []
     commands:
-      - go test -v ./...
+      - go vet ./...
+      - unformatted=$(go run mvdan.cc/gofumpt@v0.12.0 -extra -l .)
+      - 'if [ -n "$unformatted" ]; then echo "error: files not formatted with gofumpt -extra:"; echo "$unformatted"; echo "fix with: go run mvdan.cc/gofumpt@v0.12.0 -extra -w ."; exit 1; fi'
+
+  test:
+    image: *golang
+    depends_on: []
+    commands:
+      - go test -cover ./...
