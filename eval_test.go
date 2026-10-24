@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/woodpecker-ci/envsubst/parse"
 	"github.com/woodpecker-ci/envsubst/path"
 )
 
@@ -262,4 +263,60 @@ func TestExpandErrorUnsetVariable(t *testing.T) {
 	// a negative length on an unset variable used to panic
 	_, err := Eval("${unset:0:-1}", func(string) string { return "" })
 	assert.ErrorIs(t, err, ErrBadSubstringLength)
+}
+
+func TestExpandErrorInNestedArgument(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{name: "in the argument of a function", input: "${a:-${b:1:x}}"},
+		{name: "after plain text", input: "text ${a:1:x}"},
+		{name: "before another substitution", input: "${a:1:x}${b}"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Eval(tt.input, func(string) string { return "abcdefgh" })
+			assert.ErrorIs(t, err, ErrBadSubstringLength)
+		})
+	}
+}
+
+func TestEvalParseError(t *testing.T) {
+	// the input is returned unchanged next to the error
+	input := "before ${unclosed"
+	output, err := Eval(input, func(string) string { return "value" })
+	assert.ErrorIs(t, err, parse.ErrMissingClosingBrace)
+	assert.Equal(t, input, output)
+}
+
+func TestEvalEnv(t *testing.T) {
+	t.Setenv("ENVSUBST_TEST_SET", "value")
+	t.Setenv("ENVSUBST_TEST_EMPTY", "")
+
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{name: "set variable", input: "${ENVSUBST_TEST_SET}", want: "value"},
+		{name: "undefined variable is empty", input: "[${ENVSUBST_TEST_UNDEFINED}]", want: "[]"},
+		{name: "default for empty variable", input: "${ENVSUBST_TEST_EMPTY:-fallback}", want: "fallback"},
+		{name: "function on set variable", input: "${ENVSUBST_TEST_SET^^}", want: "VALUE"},
+		{name: "no substitution", input: "plain text", want: "plain text"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := EvalEnv(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+
+	t.Run("parse error", func(t *testing.T) {
+		_, err := EvalEnv("${ENVSUBST_TEST_SET")
+		assert.ErrorIs(t, err, parse.ErrMissingClosingBrace)
+	})
 }
