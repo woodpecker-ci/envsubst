@@ -3,7 +3,8 @@ package parse
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var tests = []struct {
@@ -515,16 +516,10 @@ var tests = []struct {
 
 func TestParse(t *testing.T) {
 	for _, test := range tests {
-		t.Log(test.Text)
 		t.Run(test.Text, func(t *testing.T) {
 			got, err := Parse(test.Text)
-			if err != nil {
-				t.Error(err)
-			}
-
-			if diff := cmp.Diff(test.Node, got.Root); diff != "" {
-				t.Error(diff)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, test.Node, got.Root)
 		})
 	}
 }
