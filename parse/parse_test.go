@@ -3,7 +3,8 @@ package parse
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var tests = []struct {
@@ -515,16 +516,54 @@ var tests = []struct {
 
 func TestParse(t *testing.T) {
 	for _, test := range tests {
-		t.Log(test.Text)
 		t.Run(test.Text, func(t *testing.T) {
 			got, err := Parse(test.Text)
-			if err != nil {
-				t.Error(err)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, test.Node, got.Root)
+		})
+	}
+}
 
-			if diff := cmp.Diff(test.Node, got.Root); diff != "" {
-				t.Error(diff)
-			}
+func TestParseError(t *testing.T) {
+	tests := []struct {
+		text string
+		want error
+	}{
+		{text: "${", want: ErrParseVariableName},
+		{text: "${}", want: ErrParseVariableName},
+		{text: "${!a}", want: ErrParseVariableName},
+		{text: "${a", want: ErrMissingClosingBrace},
+		{text: "${a:-${b", want: ErrMissingClosingBrace},
+		{text: "${a:", want: ErrBadSubstitution},
+		{text: "${a:1", want: ErrBadSubstitution},
+		{text: "${a:1:2", want: ErrBadSubstitution},
+		{text: "${a/x", want: ErrBadSubstitution},
+		{text: "${a/x/y", want: ErrBadSubstitution},
+		{text: "${a//x/y", want: ErrBadSubstitution},
+		{text: "${a/#x/y", want: ErrBadSubstitution},
+		{text: "${a/%x/y", want: ErrBadSubstitution},
+		{text: "${a^", want: ErrBadSubstitution},
+		{text: "${a^^", want: ErrBadSubstitution},
+		{text: "${a,", want: ErrBadSubstitution},
+		{text: "${a,,", want: ErrBadSubstitution},
+		{text: "${#", want: ErrBadSubstitution},
+		{text: "${#a", want: ErrBadSubstitution},
+		{text: "${a:1:", want: ErrParseFuncSubstitution},
+		{text: "${a:-", want: ErrParseFuncSubstitution},
+		{text: "${a:-x", want: ErrParseFuncSubstitution},
+		{text: "${a:-${b}", want: ErrParseFuncSubstitution},
+		{text: "${a/", want: ErrParseFuncSubstitution},
+		{text: "${a/x/", want: ErrParseFuncSubstitution},
+		{text: "${a#", want: ErrParseFuncSubstitution},
+		{text: "${a##", want: ErrParseFuncSubstitution},
+		{text: "${a%", want: ErrParseFuncSubstitution},
+		{text: "${a%%", want: ErrParseFuncSubstitution},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.text, func(t *testing.T) {
+			_, err := Parse(tt.text)
+			assert.ErrorIs(t, err, tt.want)
 		})
 	}
 }
