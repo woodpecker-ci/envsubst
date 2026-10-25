@@ -1,9 +1,12 @@
 package envsubst
 
 import (
-	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/woodpecker-ci/envsubst/parse"
 	"github.com/woodpecker-ci/envsubst/path"
 )
 
@@ -232,20 +235,11 @@ func TestExpand(t *testing.T) {
 
 	for _, expr := range expressions {
 		t.Run(expr.input, func(t *testing.T) {
-			t.Log(expr.input)
 			output, err := Eval(expr.input, func(s string) string {
 				return expr.params[s]
 			})
-			if err != nil {
-				t.Errorf("Want %q expanded but got error %q", expr.input, err)
-			}
-
-			if output != expr.output {
-				t.Errorf("Want %q expanded to %q, got %q",
-					expr.input,
-					expr.output,
-					output)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, expr.output, output)
 		})
 	}
 }
@@ -258,18 +252,71 @@ func TestExpandError(t *testing.T) {
 		"${var:8:-1}": ErrBadSubstringLength,
 		"${var##[}":   path.ErrBadPattern,
 	} {
-		_, err := Eval(input, func(string) string { return "abcdefgh" })
-		if !errors.Is(err, want) {
-			t.Errorf("Want %q to fail with %q, got %v", input, want, err)
-		}
+		t.Run(input, func(t *testing.T) {
+			_, err := Eval(input, func(string) string { return "abcdefgh" })
+			assert.ErrorIs(t, err, want)
+		})
 	}
 }
 
 func TestExpandErrorUnsetVariable(t *testing.T) {
 	// a negative length on an unset variable used to panic
-	input := "${unset:0:-1}"
-	_, err := Eval(input, func(string) string { return "" })
-	if !errors.Is(err, ErrBadSubstringLength) {
-		t.Errorf("Want %q to fail with %q, got %v", input, ErrBadSubstringLength, err)
+	_, err := Eval("${unset:0:-1}", func(string) string { return "" })
+	assert.ErrorIs(t, err, ErrBadSubstringLength)
+}
+
+func TestExpandErrorInNestedArgument(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{name: "in the argument of a function", input: "${a:-${b:1:x}}"},
+		{name: "after plain text", input: "text ${a:1:x}"},
+		{name: "before another substitution", input: "${a:1:x}${b}"},
 	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Eval(tt.input, func(string) string { return "abcdefgh" })
+			assert.ErrorIs(t, err, ErrBadSubstringLength)
+		})
+	}
+}
+
+func TestEvalParseError(t *testing.T) {
+	// the input is returned unchanged next to the error
+	input := "before ${unclosed"
+	output, err := Eval(input, func(string) string { return "value" })
+	assert.ErrorIs(t, err, parse.ErrMissingClosingBrace)
+	assert.Equal(t, input, output)
+}
+
+func TestEvalEnv(t *testing.T) {
+	t.Setenv("ENVSUBST_TEST_SET", "value")
+	t.Setenv("ENVSUBST_TEST_EMPTY", "")
+
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{name: "set variable", input: "${ENVSUBST_TEST_SET}", want: "value"},
+		{name: "undefined variable is empty", input: "[${ENVSUBST_TEST_UNDEFINED}]", want: "[]"},
+		{name: "default for empty variable", input: "${ENVSUBST_TEST_EMPTY:-fallback}", want: "fallback"},
+		{name: "function on set variable", input: "${ENVSUBST_TEST_SET^^}", want: "VALUE"},
+		{name: "no substitution", input: "plain text", want: "plain text"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := EvalEnv(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+
+	t.Run("parse error", func(t *testing.T) {
+		_, err := EvalEnv("${ENVSUBST_TEST_SET")
+		assert.ErrorIs(t, err, parse.ErrMissingClosingBrace)
+	})
 }
