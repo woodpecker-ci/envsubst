@@ -21,7 +21,7 @@
 
 ### 📦️ Dependency
 
-- Bump go to 1.27 and go-cmp to 0.7.0 [[#4](https://github.com/woodpecker-ci/envsubst/pull/4)]
+- Bump go to v1.27 [[#4](https://github.com/woodpecker-ci/envsubst/pull/4)]
 
 ### Misc
 
