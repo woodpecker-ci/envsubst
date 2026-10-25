@@ -142,9 +142,9 @@ func replaceAll(s string, args ...string) (string, error) {
 	case 0:
 		return "", ErrMissingArgument
 	case 1:
-		return strings.Replace(s, args[0], "", -1), nil
+		return strings.ReplaceAll(s, args[0], ""), nil
 	default:
-		return strings.Replace(s, args[0], args[1], -1), nil
+		return strings.ReplaceAll(s, args[0], args[1]), nil
 	}
 }
 
@@ -161,10 +161,14 @@ func replaceFirst(s string, args ...string) (string, error) {
 	}
 }
 
+// replaceArgCount is the number of arguments the prefix and suffix
+// replacement functions require.
+const replaceArgCount = 2
+
 // replacePrefix returns a copy of the string s with the matching
 // prefix replaced with the replacement string.
 func replacePrefix(s string, args ...string) (string, error) {
-	if len(args) != 2 {
+	if len(args) != replaceArgCount {
 		return "", ErrMissingArgument
 	}
 	if strings.HasPrefix(s, args[0]) {
@@ -176,17 +180,17 @@ func replacePrefix(s string, args ...string) (string, error) {
 // replaceSuffix returns a copy of the string s with the matching
 // suffix replaced with the replacement string.
 func replaceSuffix(s string, args ...string) (string, error) {
-	if len(args) != 2 {
+	if len(args) != replaceArgCount {
 		return "", ErrMissingArgument
 	}
 	if before, ok := strings.CutSuffix(s, args[0]); ok {
 		s = before
-		s = s + args[1]
+		s += args[1]
 	}
 	return s, nil
 }
 
-// TODO
+// TODO: document the trim functions below.
 
 func trimShortestPrefix(s string, args ...string) (string, error) {
 	if len(args) == 0 {

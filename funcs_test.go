@@ -65,7 +65,7 @@ func TestSubstr(t *testing.T) {
 	}
 }
 
-// want values match bash 5.2 ${s:pos:len}
+// Want values match bash 5.2 ${s:pos:len}.
 func TestSubstrNegativeLength(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -97,7 +97,7 @@ func TestSubstrNegativeLength(t *testing.T) {
 	}
 }
 
-// bash fails on all of these with "substring expression < 0"
+// Bash fails on all of these with "substring expression < 0".
 func TestSubstrNegativeLengthBeforePosition(t *testing.T) {
 	tests := []struct {
 		name   string
