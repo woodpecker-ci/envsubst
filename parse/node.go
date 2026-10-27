@@ -5,7 +5,7 @@ type Node interface {
 	node()
 }
 
-// empty string node
+// Empty string node.
 var empty = new(TextNode)
 
 // a template is represented by a tree consisting of one
@@ -27,41 +27,6 @@ type (
 	ListNode struct {
 		Nodes []Node
 	}
-
-	// ParamNode struct{
-	// 	Name string
-	// }
-	//
-	// CaseNode struct {
-	// 	Name string
-	// 	First bool
-	// }
-	//
-	// LowerNode struct {
-	// 	Name string
-	// 	First bool
-	// }
-	//
-	// SubstrNode struct {
-	// 	Name string
-	// 	Pos Node
-	// 	Len Node
-	// }
-	//
-	// ReplaceNode struct {
-	// 	Name string
-	// 	Substring Node
-	// 	Replacement Node
-	// }
-	//
-	// TrimNode struct{
-	//
-	// }
-	//
-	// DefaultNode struct {
-	// 	Name string
-	// 	Default Node
-	// }
 )
 
 // newTextNode returns a new TextNode.
@@ -79,7 +44,7 @@ func newFuncNode(name string) *FuncNode {
 	return &FuncNode{Param: name}
 }
 
-// node() defines the node in a parse tree
+// The node method defines the node in a parse tree.
 
 func (*TextNode) node() {}
 func (*ListNode) node() {}
