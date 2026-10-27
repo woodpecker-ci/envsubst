@@ -5,7 +5,7 @@ import (
 	"unicode/utf8"
 )
 
-// eof rune sent when end of file is reached
+// The eof rune is sent when end of file is reached.
 var eof = rune(0)
 
 // token is a lexical token.
@@ -13,14 +13,14 @@ type token uint
 
 // list of lexical tokens.
 const (
-	// special tokens
+	// Special tokens.
 	tokenIllegal token = iota
 	tokenEOF
 
-	// identifiers and literals
+	// Identifiers and literals.
 	tokenIdent
 
-	// operators and delimiters
+	// Operators and delimiters.
 	tokenLbrack
 	tokenRbrack
 	tokenQuote
@@ -106,7 +106,7 @@ func (s *scanner) string() string {
 	return s.buf[s.start:s.pos]
 }
 
-// tests if the bit exists for a given character bit
+// Tests if the bit exists for a given character bit.
 func (s *scanner) shouldEscape(character byte) bool {
 	return s.escapeChars&character != 0
 }
@@ -212,7 +212,7 @@ func (s *scanner) scanEscaped(r rune) bool {
 }
 
 //
-// scanner functions accept or reject runes.
+// Scanner functions accept or reject runes.
 //
 
 func acceptRune(r rune, i int) bool {
@@ -229,10 +229,6 @@ func acceptColon(r rune, i int) bool {
 
 func acceptOneHash(r rune, i int) bool {
 	return r == '#' && i == 1
-}
-
-func acceptNone(r rune, i int) bool {
-	return false
 }
 
 func acceptNotClosing(r rune, i int) bool {

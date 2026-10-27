@@ -1,0 +1,93 @@
+version: '2'
+run:
+  timeout: 15m
+linters:
+  default: none
+  enable:
+    - asciicheck
+    - bidichk
+    - dogsled
+    - durationcheck
+    - errcheck
+    - errorlint
+    - forbidigo
+    - forcetypeassert
+    - gochecknoinits
+    - gocritic
+    - godot
+    - gomoddirectives
+    - goprintffuncname
+    - govet
+    - ineffassign
+    - makezero
+    - misspell
+    - mnd
+    - modernize
+    - nolintlint
+    - revive
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+    - usetesting
+    - wastedassign
+    - whitespace
+  settings:
+    errorlint:
+      errorf-multi: true
+    forbidigo:
+      forbid:
+        - pattern: ^print.*$
+        - pattern: panic
+        - pattern: ^log.Fatal().*$
+    godot:
+      scope: toplevel
+      exclude:
+        - '^\s*cSpell:'
+        - '^\s*TODO:'
+      capital: true
+      period: true
+    misspell:
+      locale: US
+    revive:
+      rules:
+        - name: var-naming
+          arguments:
+            - []
+            - []
+            - - skipPackageNameChecks: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - mnd
+        path: _test.go
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/woodpecker-ci/envsubst)
+      custom-order: true
+    gofmt:
+      simplify: true
+      rewrite-rules:
+        - pattern: interface{}
+          replacement: any
+    gofumpt:
+      extra:
+        group-params: true
+        clothe-returns: true
+        balance-calls: true
+  exclusions:
+    generated: lax

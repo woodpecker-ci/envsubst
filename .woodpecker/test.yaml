@@ -8,12 +8,10 @@ variables:
 
 steps:
   lint:
-    image: *golang
+    image: golangci/golangci-lint:v2.15.0
     depends_on: []
     commands:
-      - go vet ./...
-      - unformatted=$(go run mvdan.cc/gofumpt@v0.12.0 -extra -l .)
-      - 'if [ -n "$unformatted" ]; then echo "error: files not formatted with gofumpt -extra:"; echo "$unformatted"; echo "fix with: go run mvdan.cc/gofumpt@v0.12.0 -extra -w ."; exit 1; fi'
+      - golangci-lint run
 
   test:
     image: *golang

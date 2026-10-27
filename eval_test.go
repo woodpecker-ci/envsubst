@@ -10,7 +10,7 @@ import (
 	"github.com/woodpecker-ci/envsubst/path"
 )
 
-// test cases sourced from tldp.org
+// Test cases sourced from tldp.org.
 // http://www.tldp.org/LDP/abs/html/parameter-substitution.html
 
 func TestExpand(t *testing.T) {

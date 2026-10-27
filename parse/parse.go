@@ -89,8 +89,7 @@ func (t *Tree) parseAny() (Node, error) {
 func (t *Tree) parseFunc() (Node, error) {
 	// Turn on all escape characters
 	t.scanner.escapeChars = escapeAll
-	switch t.scanner.peek() {
-	case '#':
+	if t.scanner.peek() == '#' {
 		return t.parseLenFunc()
 	}
 
@@ -163,8 +162,8 @@ func (t *Tree) parseDefaultOrSubstr(name string) (Node, error) {
 	}
 }
 
-// parses the ${param:offset} string function
-// parses the ${param:offset:length} string function
+// Parses the ${param:offset} string function.
+// Parses the ${param:offset:length} string function.
 func (t *Tree) parseSubstrFunc(name string) (Node, error) {
 	node := new(FuncNode)
 	node.Param = name
@@ -213,10 +212,10 @@ func (t *Tree) parseSubstrFunc(name string) (Node, error) {
 	return node, t.consumeRbrack()
 }
 
-// parses the ${param%word} string function
-// parses the ${param%%word} string function
-// parses the ${param#word} string function
-// parses the ${param##word} string function
+// Parses the ${param%word} string function.
+// Parses the ${param%%word} string function.
+// Parses the ${param#word} string function.
+// Parses the ${param##word} string function.
 func (t *Tree) parseRemoveFunc(name string, accept acceptFunc) (Node, error) {
 	node := new(FuncNode)
 	node.Param = name
@@ -244,10 +243,10 @@ func (t *Tree) parseRemoveFunc(name string, accept acceptFunc) (Node, error) {
 	return node, t.consumeRbrack()
 }
 
-// parses the ${param/pattern/string} string function
-// parses the ${param//pattern/string} string function
-// parses the ${param/#pattern/string} string function
-// parses the ${param/%pattern/string} string function
+// Parses the ${param/pattern/string} string function.
+// Parses the ${param//pattern/string} string function.
+// Parses the ${param/#pattern/string} string function.
+// Parses the ${param/%pattern/string} string function.
 func (t *Tree) parseReplaceFunc(name string) (Node, error) {
 	node := new(FuncNode)
 	node.Param = name
@@ -281,8 +280,7 @@ func (t *Tree) parseReplaceFunc(name string) (Node, error) {
 	}
 
 	// check for blank string
-	switch t.scanner.peek() {
-	case '}':
+	if t.scanner.peek() == '}' {
 		return node, t.consumeRbrack()
 	}
 
@@ -298,11 +296,11 @@ func (t *Tree) parseReplaceFunc(name string) (Node, error) {
 	return node, t.consumeRbrack()
 }
 
-// parses the ${parameter=word} string function
-// parses the ${parameter:=word} string function
-// parses the ${parameter:-word} string function
-// parses the ${parameter:?word} string function
-// parses the ${parameter:+word} string function
+// Parses the ${parameter=word} string function.
+// Parses the ${parameter:=word} string function.
+// Parses the ${parameter:-word} string function.
+// Parses the ${parameter:?word} string function.
+// Parses the ${parameter:+word} string function.
 func (t *Tree) parseDefaultFunc(name string) (Node, error) {
 	node := new(FuncNode)
 	node.Param = name
@@ -322,8 +320,7 @@ func (t *Tree) parseDefaultFunc(name string) (Node, error) {
 	// loop through all possible runes in default param
 	for {
 		// this acts as the break condition. Peek to see if we reached the end
-		switch t.scanner.peek() {
-		case '}':
+		if t.scanner.peek() == '}' {
 			return node, t.consumeRbrack()
 		}
 		param, err := t.parseParam(acceptNotClosing, scanIdent)
@@ -335,10 +332,10 @@ func (t *Tree) parseDefaultFunc(name string) (Node, error) {
 	}
 }
 
-// parses the ${param,} string function
-// parses the ${param,,} string function
-// parses the ${param^} string function
-// parses the ${param^^} string function
+// Parses the ${param,} string function.
+// Parses the ${param,,} string function.
+// Parses the ${param^} string function.
+// Parses the ${param^^} string function.
 func (t *Tree) parseCasingFunc(name string) (Node, error) {
 	node := new(FuncNode)
 	node.Param = name
@@ -355,7 +352,7 @@ func (t *Tree) parseCasingFunc(name string) (Node, error) {
 	return node, t.consumeRbrack()
 }
 
-// parses the ${#param} string function
+// Parses the ${#param} string function.
 func (t *Tree) parseLenFunc() (Node, error) {
 	node := new(FuncNode)
 
@@ -389,14 +386,3 @@ func (t *Tree) consumeRbrack() error {
 	}
 	return nil
 }
-
-// consumeDelimiter consumes a function argument delimiter. If a
-// delimiter is not consumed an ErrBadSubstitution is returned.
-// func (t *Tree) consumeDelimiter(accept acceptFunc, mode uint) error {
-// 	t.scanner.accept = accept
-// 	t.scanner.mode = mode
-// 	if t.scanner.scan() != tokenRbrack {
-// 		return ErrBadSubstitution
-// 	}
-// 	return nil
-// }
