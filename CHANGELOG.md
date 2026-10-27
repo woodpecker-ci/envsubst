@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.0](https://github.com/woodpecker-ci/envsubst/releases/tag/v1.2.0) - 2026-10-25
+## [1.2.0](https://github.com/woodpecker-ci/envsubst/releases/tag/v1.2.0) - 2026-10-27
 
 ### ❤️ Thanks to all contributors! ❤️
 
@@ -25,4 +25,5 @@
 
 ### Misc
 
+- Add golangci linter [[#8](https://github.com/woodpecker-ci/envsubst/pull/8)]
 - Modernize CI [[#6](https://github.com/woodpecker-ci/envsubst/pull/6)]
